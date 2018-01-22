@@ -2,7 +2,24 @@
 
 Implementations of 3 data structures that help to accelerate approximate string matching.
 
-## BK-Tree
+## JS Implementations
+
+### BK-Tree
+* **BKTree(function metric, string[] items)** : Creates the tree with given items and metric function (Levenshtein or Hamming)
+* **add(string S)** : Inserts given string S into the tree
+* **delete(string S)** : Marks the string S as deleted
+* **query(string Q, int T)** : Returns strings within T distance of given string Q
+* **entries()** : Returns entries inside the tree
+* **has(string S)** : Checks for if given string S, equivalent to bool : query(S, 0).length > 0
+* **print()** : Prints the tree
+* **merge(BKTree T)** : Imports entries from another BKTree
+* **toJSON()** : Converts tree into JSON format
+* **parse(JSON J)** : Parses given JSON data, overrides current tree
+
+
+## C++ Implementations
+
+### BK-Tree
 * **bk_tree()** : Constructs empty BK-Tree
 * **bk_tree(string S)** : Constructs the tree with S as root node
 * **bk_tree(vector<string> S)** : Constructs the tree with given dictionary
@@ -25,7 +42,7 @@ for(string& s : t)
   s;
 ```
 
-## Trie
+### Trie
 * **trie()** : Constructs empty Trie.
 * **void insert(string S)** : Inserts string into Trie
 * **void search(string Q, int T)** : Searches for string Q within tolerance of T, uses Levenshtein Distance,
@@ -47,7 +64,7 @@ h
 
 ```
 
-## VP-Tree
+### VP-Tree
 * **vp_tree(vector<string> S)** : Constructs the tree with given set of strings
 * **vector<string> search(string Q, int T)** : Searches the tree for strings within T distance from given string Q.
 * **(static) int levenshtein_distance(string S, string R)** : Returns the Levenshtein Distance of two strings
