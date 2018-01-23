@@ -64,9 +64,17 @@ public:
     }
 
     vector<string> search(string str, int tol){
+        if(size <= 0)
+            return vector<string>(0);
         vector<string> vec;
         _search(str, tol, root, vec);
         return vec;
+    }
+
+    bool has(string str, int tol=0){
+        if(size <= 0)
+            return false;
+        return _has(str, tol, root);
     }
 
     void print(node* r = nullptr, node* n = nullptr, int depth=0){
@@ -191,6 +199,26 @@ private:
             if(p.first >= gte && p.first <= lte)
                 _search(str, tol, p.second, vec);
         }
+    }
+
+    bool _has(string str, int tol, node* r){
+        string r_val = items[r->index];
+        int dist = levenshtein_distance(r_val, str);
+        
+        if(dist <= tol){
+            if(deleted.find(r_val) == deleted.end())
+                return true;
+        }
+
+        int gte = dist-tol, lte = dist+tol;
+        
+        for(const pair<int, node*>& p : r->children){
+            if(p.first >= gte && p.first <= lte)
+                if(_has(str, tol, p.second))
+                    return true;
+        }
+
+        return false;
     }
 
     void _print(node* r = nullptr, node* n = nullptr, int depth=0){

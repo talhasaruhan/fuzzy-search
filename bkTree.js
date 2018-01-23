@@ -76,7 +76,6 @@ class BKTree{
         this.deleted = new Set();
         this.size = 0;
         this.items = [];
-        console.log(items);
         if(items == null)
             this._constructEmptyTree();
         else if(typeof items === "string" || items instanceof String){
@@ -163,6 +162,8 @@ class BKTree{
     }    
 
     query(str, tol){
+        if(this.size <= 0)
+            return [];
         var matches = new Array();
         this._query(str, tol, this.root, matches);
         return matches;
@@ -192,10 +193,33 @@ class BKTree{
         return this.items.slice(0);
     }
 
-    has(str){
-        if(this.query(str, 0).length > 0)    
+    has(str, tol=0){
+        if(this.size <= 0)
+            return false;
+        return this._has(str, tol, this.root);
+    }
+
+    _has(str, tol, n){
+        if(this.deleted.has(this.items[n.index]))
+            return;
+
+        var dist = this.metric(str, this.items[n.index]);
+        if(dist <= tol)
             return true;
-        return false;
+
+        var gte = dist-tol;  
+        var lte = dist+tol;
+
+        if(n.children == null)
+            return false;
+
+        for(const entry of n.children.entries()){
+            if(entry[0] <= lte && entry[0] >= gte)
+                if(this._has(str, tol, entry[1]))
+                    return true;
+        }
+
+        return false; 
     }
 
     _getMetricName(){
