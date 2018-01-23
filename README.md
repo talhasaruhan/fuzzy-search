@@ -10,7 +10,7 @@ Implementations of 3 data structures that help to accelerate approximate string 
 * **delete(string S)** : Marks the string S as deleted
 * **query(string Q, int T)** : Returns strings within T distance of given string Q
 * **entries()** : Returns entries inside the tree
-* **has(string S)** : Checks for if given string S, equivalent to bool : query(S, 0).length > 0
+* **has(string S, int T=0)** : Checks for a string in range T of S, equivalent to query(S, tol).length > 0, terminates at first match
 * **print()** : Prints the tree
 * **merge(BKTree T)** : Imports entries from another BKTree
 * **toJSON()** : Converts tree into JSON format
@@ -26,6 +26,7 @@ Implementations of 3 data structures that help to accelerate approximate string 
 * **void insert(string S)** : Inserts the given string into the tree
 * **void remove(string S)** : Marks the string as deleted, and rebuilds the tree after number of deleted items exceeds a point.
 * **vector<string> search(string Q, int T)** : Searches the tree for strings within T distance from given string Q.
+* **has(string S, int T=0)** : Checks for a string in range T of S, equivalent to search(S, tol).length > 0, terminates at first match
 * **int capacity()** : Returns the size of the tree in bytes
 * **(static) int levenshtein_distance(string S, string R)** : Returns the Levenshtein Distance of two strings
 * **void print()** : Prints the tree in the following format
