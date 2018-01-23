@@ -189,19 +189,7 @@ class BKTree{
     }
 
     entries(){
-        var items = new Array();
-        this._entries(this.root, items);
-        return items;
-    }
-
-    _entries(n=this.root, vec){
-        if(vec != null)
-            vec.push(n.value);
-        if(n.children == null)
-            return;
-        for(const entry of n.children.entries()){
-            this._entries(entry[1], vec);
-        }
+        return this.items.slice(0);
     }
 
     has(str){
