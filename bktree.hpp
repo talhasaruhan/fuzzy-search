@@ -40,16 +40,18 @@ public:
     }
 
     void insert(string str){
+        size++;
         if(deleted.find(str) != deleted.end()){
             deleted.erase(str);
-            size++;
             return;
         }
 
         int index = items.size();
         items.push_back(str);
-        size++;
-        _add_from_items(index);
+        if(!_add_from_items(index)){
+            size--;
+            items.pop_back();
+        }
     }
 
     void remove(string str){
@@ -68,21 +70,8 @@ public:
     }
 
     void print(node* r = nullptr, node* n = nullptr, int depth=0){
-        if(n == nullptr)
-            n = root;
-        if(r == nullptr)
-            r = root;
-        
-        for(int i=0; i<depth; ++i)
-            cout << "\t";
-        
-        string n_val = items[n->index], r_val = items[r->index];
-        if(deleted.find(n_val) != deleted.end())
-            cout << "D*";
-        cout << n_val << ", " << levenshtein_distance(r_val, n_val) << endl;
-        for(const pair<int, node*>& x : n->children){
-            print(n, x.second, depth+1);
-        }
+        cout << size << "\n";
+        _print(root, root, 0);
     }
 
     int capacity(){
@@ -139,7 +128,11 @@ private:
         }else{
             root = new node(0);
             for(int i=1; i<size; ++i){
-                _add_from_items(i);
+                if(!_add_from_items(i)){
+                    swap(items[i], items[size-1]);
+                    size--;
+                    i--;
+                }
             }     
         }
     }
@@ -161,7 +154,7 @@ private:
         _build_from_items(items);
     }
 
-    void _add_from_items(int index){
+    bool _add_from_items(int index){
         string str = items[index];
 
         if(root == nullptr){
@@ -176,9 +169,9 @@ private:
             }
             if(dist > 0){
                 t->children.insert(pair<int, node*>(dist, new_node));
+                return true;
             }else{
-                items.pop_back();
-                size--;
+                return false;
             }
         }
     }
@@ -200,4 +193,21 @@ private:
         }
     }
 
+    void _print(node* r = nullptr, node* n = nullptr, int depth=0){
+        if(n == nullptr)
+            n = root;
+        if(r == nullptr)
+            r = root;
+        
+        for(int i=0; i<depth; ++i)
+            cout << "\t";
+        
+        string n_val = items[n->index], r_val = items[r->index];
+        if(deleted.find(n_val) != deleted.end())
+            cout << "D*";
+        cout << n_val << ", " << levenshtein_distance(r_val, n_val) << endl;
+        for(const pair<int, node*>& x : n->children){
+            _print(n, x.second, depth+1);
+        }
+    }
 };
