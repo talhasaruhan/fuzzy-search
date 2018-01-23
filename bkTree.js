@@ -37,8 +37,8 @@ function hammingDistance(str1, str2){
 }
 
 class BKTreeNode{
-    constructor(value=""){
-        this.value = value;
+    constructor(index=0){
+        this.index = index;
         this.children = null;
     }
 
@@ -48,13 +48,13 @@ class BKTreeNode{
         else
             var childrenJSON = null;
 
-        return {'value' : this.value, 'children' : childrenJSON};
+        return {'index' : this.index, 'children' : childrenJSON};
     }
 
     parse(json){
         if(typeof json === "string" || json instanceof String)
             json = JSON.parse(json);
-        this.value = json["value"];
+        this.index = json["index"];
         if(json["children"] == null)
             this.children = null;
         else{
@@ -71,16 +71,21 @@ class BKTreeNode{
 }
 
 class BKTree{
-    constructor(metric=levenshteinDistance, items=null){
+    constructor(items=null, metric=levenshteinDistance){
         this.metric = metric;
         this.deleted = new Set();
         this.size = 0;
+        this.items = [];
+        console.log(items);
         if(items == null)
             this._constructEmptyTree();
-        else if(typeof items === "string" || items instanceof String)
+        else if(typeof items === "string" || items instanceof String){
+            this.items.push(items);
             this._constructFromRoot(items);
-        else if(Array.isArray(items))
-            this._contructFromDict(items);
+        }else if(Array.isArray(items)){
+            this.items = items;
+            this._contructFromDict();
+        }
     }
 
     _constructEmptyTree(){
@@ -88,43 +93,67 @@ class BKTree{
     }
 
     _constructFromRoot(str){
-        this.root = new BKTreeNode(str);
+        this.root = new BKTreeNode(0);
     }
 
-    _contructFromDict(items){
-        this.root = new BKTreeNode(items[0]);
-        for(var i=1; i<items.length; ++i){
-            this.add(items[i]);
+    _contructFromDict(){
+        this.root = new BKTreeNode(0);
+        this.size = this.items.length;
+        var temp;
+        for(var i=1; i<this.size; ++i){
+            if(!this._addFromItems(i)){
+                temp = this.items[i];
+                this.items[i] = this.items[this.size-1];
+                this.items[this.size-1] = temp;
+                this.items.pop();
+                this.size = this.size-1;
+                i = i-1;
+            }
         }
     }
 
     add(str){
         this.size = this.size + 1;
-        if(this.deleted.delete(str))
+        if(this.deleted.delete(str)){
             return;
-        if(this.root == null)
-            this.root = new BKTreeNode(str);
-        else{
-            var t = this.root;
-            var dist = this.metric(t.value, str);
-            while(dist > 0){
-                if(t.children == null){
-                    t.children = new Map();
-                    break;
-                }
-                if(!t.children.has(dist))
-                    break;
-                t = t.children.get(dist);
-                dist = this.metric(t.value, str);
+        }
+
+        var index = this.items.length;
+        this.items.push(str);
+        if(this.root == null){
+            this.root = new BKTreeNode(0);
+            return;
+        }
+        if(!this._addFromItems(index)){
+            this.size = this.size - 1;
+            this.items.pop();
+        }
+    }
+
+    _addFromItems(index){
+        var t = this.root;
+        var dist = this.metric(this.items[t.index], this.items[index]);
+        while(dist > 0){
+            if(t.children == null){
+                t.children = new Map();
+                break;
             }
-            if(dist > 0)
-                t.children.set(dist, new BKTreeNode(str));
+            if(!t.children.has(dist))
+                break;
+            t = t.children.get(dist);
+            dist = this.metric(this.items[t.index], this.items[index]);
+        }
+        if(dist > 0){
+            t.children.set(dist, new BKTreeNode(index));
+            return true;
+        }else{
+            return false;
         }
     }
 
     delete(str){
         if(this.has(str)){
-            this._unsafeDelete();
+            this._unsafeDelete(str);
         }
     }
 
@@ -140,13 +169,13 @@ class BKTree{
     }
 
     _query(str, tol, n, vec){
-        if(this.deleted.has(n.value))
+        if(this.deleted.has(this.items[n.index]))
             return;
 
-        var dist = this.metric(str, n.value);
+        var dist = this.metric(str, this.items[n.index]);
         if(dist <= tol)
             if(vec != null)
-                vec.push({[dist] : n.value});
+                vec.push({[dist] : this.items[n.index]});
 
         var gte = dist-tol;  
         var lte = dist+tol;
@@ -193,6 +222,7 @@ class BKTree{
     }
 
     print(){
+        console.log(this.size);
         console.log(this._getMetricName());
         this._print();
     }
@@ -202,7 +232,10 @@ class BKTree{
         for(var i=0; i<depth; ++i)
             str = str + "\t";
 
-        str = str + n.value + ", " + this.metric(r.value, n.value);
+        if(this.deleted.has(this.items[n.index]))
+            str = str + "*";
+
+        str = str + this.items[n.index] + ", " + this.metric(this.items[r.index], this.items[n.index]);
         console.log(str);
         
         if(n.children == null)
